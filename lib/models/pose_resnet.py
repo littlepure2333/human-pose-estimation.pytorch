@@ -140,6 +140,25 @@ class Bottleneck_CAFFE(nn.Module):
 
         return out
 
+class Pix2Pose(nn.Module):
+    '''
+    input: x (B, C, H, W) #B:batch
+    output: out (B, C1, 16)
+    '''
+    def __init__(self, in_channels, input_size, num_point):
+        super(Pix2Pose, self).__init__()
+        inter_channels = in_channels//4
+        self.reduce = nn.Conv2d(in_channels, inter_channels, kernel=1, stride=1, padding=0, groups=1, bias=True)
+        self.trans = nn.Conv1d(input_size*input_size, num_point, kernel=1, stride=1, padding=0, groups=1, bias=True)
+
+    def forward(self, x):
+        x = self.reduce(x) #B, C1, H, W
+        B, C, H, W = x.shape
+        x = x.reshape(B, C, -1) #B, C1, N=H*W
+        x = x.permuter(0, 2, 1) #B, N, C1
+        x = self.trans(x) #B, 16, C1
+        return x
+
 
 class PoseResNet(nn.Module):
 
