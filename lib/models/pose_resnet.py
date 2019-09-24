@@ -142,7 +142,7 @@ class Bottleneck_CAFFE(nn.Module):
 
 class Pix2Pose(nn.Module):
     '''
-    input: x (B, C, H, W) #B:batch
+    input: x (B, C, H, W) #B:batch size
     output: out (B, C1, 16)
     '''
     def __init__(self, in_channels, input_size, num_point):
@@ -192,6 +192,11 @@ class PoseResNet(nn.Module):
             stride=1,
             padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
         )
+
+        # for lamb θ
+        # todo cfg.MODEL.NUM_LAMBS
+        self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Linear(512 * block.expansion, cfg.MODEL.NUM_LAMBS)
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
